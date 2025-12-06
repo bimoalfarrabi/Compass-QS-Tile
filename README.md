@@ -10,7 +10,8 @@ This application is designed to be as lightweight as possible. It has no app dra
 
 -   **Dynamic Tile:** The tile icon rotates in real-time to point North.
 -   **Live Label:** Displays the exact azimuth (degrees) and cardinal direction (N, NE, E, SE, S, SW, W, NW).
--   **Battery Efficient:** Sensors are only active when the Quick Settings panel is visible (`onStartListening`) and stop immediately when closed (`onStopListening`).
+-   **Tap to Toggle:** Tap the tile to enable or disable the compass service.
+-   **Battery Efficient:** Sensors are completely disabled when the tile is toggled off. When active, they only run while the Quick Settings panel is visible.
 -   **Ultra Lightweight:** Built without `AppCompat`, `Material Design`, or `AndroidX Core`, resulting in a tiny APK size (aiming for < 100KB).
 -   **No Clutter:** Does not appear in your App Drawer.
 
@@ -29,7 +30,8 @@ Since there is no app interface, you must add the tile manually after installati
 2.  Tap the **Edit** (pencil) icon.
 3.  Scroll down to find the **"Compass"** tile.
 4.  Drag and drop it into your active tiles area.
-5.  The compass will now update whenever you open the panel.
+5.  **Tap the tile** to activate the compass. It will light up and update in real-time.
+6.  Tap again to deactivate it.
 
 ## Technical Details
 
