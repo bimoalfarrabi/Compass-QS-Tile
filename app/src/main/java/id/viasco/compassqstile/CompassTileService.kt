@@ -1,5 +1,6 @@
 package id.viasco.compassqstile
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
@@ -29,6 +30,9 @@ class CompassTileService : TileService(), SensorEventListener {
 
     private var lastAzimuth = 0f
     private val MIN_CHANGE_DEGREE = 5f // Only update if changed > 5 degrees
+    
+    private val PREFS_NAME = "compass_prefs"
+    private val KEY_IS_ACTIVE = "is_active"
 
     override fun onCreate() {
         super.onCreate()
@@ -39,13 +43,50 @@ class CompassTileService : TileService(), SensorEventListener {
 
     override fun onStartListening() {
         super.onStartListening()
-        val tile = qsTile
-        if (tile != null) {
+        val tile = qsTile ?: return
+        
+        val isActive = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(KEY_IS_ACTIVE, false)
+        
+        if (isActive) {
             tile.state = Tile.STATE_ACTIVE
             tile.label = "Loading..."
-            tile.updateTile()
+            startSensors()
+        } else {
+            tile.state = Tile.STATE_INACTIVE
+            tile.label = "Compass"
+            tile.icon = Icon.createWithResource(this, R.drawable.ic_compass)
         }
+        tile.updateTile()
+    }
 
+    override fun onStopListening() {
+        super.onStopListening()
+        stopSensors()
+    }
+    
+    override fun onClick() {
+        super.onClick()
+        val tile = qsTile ?: return
+        
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val newState = !prefs.getBoolean(KEY_IS_ACTIVE, false)
+        
+        prefs.edit().putBoolean(KEY_IS_ACTIVE, newState).apply()
+        
+        if (newState) {
+            tile.state = Tile.STATE_ACTIVE
+            tile.label = "Loading..."
+            startSensors()
+        } else {
+            tile.state = Tile.STATE_INACTIVE
+            tile.label = "Compass"
+            tile.icon = Icon.createWithResource(this, R.drawable.ic_compass)
+            stopSensors()
+        }
+        tile.updateTile()
+    }
+    
+    private fun startSensors() {
         accelerometer?.also { sensor ->
             sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI)
         }
@@ -53,9 +94,8 @@ class CompassTileService : TileService(), SensorEventListener {
             sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI)
         }
     }
-
-    override fun onStopListening() {
-        super.onStopListening()
+    
+    private fun stopSensors() {
         sensorManager.unregisterListener(this)
     }
 
@@ -148,15 +188,5 @@ class CompassTileService : TileService(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // No detailed implementation needed for this case
-    }
-
-    override fun onClick() {
-        super.onClick()
-        // Force update on click (optional)
-        val tile = qsTile
-        if (tile != null && tile.state == Tile.STATE_INACTIVE) {
-            tile.state = Tile.STATE_ACTIVE
-            tile.updateTile()
-        }
     }
 }
